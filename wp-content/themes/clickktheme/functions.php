@@ -48,9 +48,12 @@ add_action('init', 'clickk_startSession', 1);
 function add_date_90_days() {
 	// Variables
 	$today = date( 'Ymd' );	
-    $ninety_days = date('Ymd', strtotime($today. ' + 90 days'));
+    $ninety_days = date('d/m/Y', strtotime($today. ' + 93 days'));
+    $nice_string_nintety_days = date('d/m/Y', strtotime($today. ' + 93 days'));
+    $acf_string_nintety_days = date('Ymd', strtotime($today. ' + 93 days'));
+    $current_day = date('D', strtotime(date('Y-m-d', strtotime($today. ' + 93 days'))));
 	
-	define( POST_NAME, $ninety_days );
+	define( POST_NAME, $nice_string_nintety_days . ' ' .$current_day );
     define( POST_TYPE, 'delivery_date' );
 
     $post_data = array(
@@ -59,7 +62,12 @@ function add_date_90_days() {
 		'post_type'     => POST_TYPE
 	);
 
-	wp_insert_post( $post_data, $error_obj );
+	$post_id = wp_insert_post( $post_data, $error_obj );
+
+    //Set date
+    $field_key = "date";
+    $value = $acf_string_nintety_days;
+    update_field( $field_key, $value, $post_id);
 }
 
 // Schedule Cron Job Event

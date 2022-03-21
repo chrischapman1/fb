@@ -20,69 +20,37 @@
         raymond_terrace_exception();
    }
 
-   // Variables
-	$today = date( 'Ymd' );	
-    $ninety_days = date('d/m/Y', strtotime($today. ' + 93 days'));
-    $nice_string_nintety_days = date('d/m/Y', strtotime($today. ' + 93 days'));
-    $acf_string_nintety_days = date('Ymd', strtotime($today. ' + 93 days'));
-    $current_day = date('D', strtotime(date('Y-m-d', strtotime($today. ' + 93 days'))));
-	
-	define( POST_NAME, $nice_string_nintety_days . ' ' .$current_day );
-    define( POST_TYPE, 'delivery_date' );
+    global $post, $woocommerce;
 
-    $post_data = array(
-		'post_title'    => wp_strip_all_tags( POST_NAME ),
-		'post_status'   => 'publish',
-		'post_type'     => POST_TYPE
-	);
+    $delivery_zones = WC_Shipping_Zones::get_zones();
 
-	$post_id = wp_insert_post( $post_data, $error_obj );
+    //GET EACH SHIPPING ZONE AND CHECK POSTCODE
+  
+    $args = array( 
+                    'post_type' => 'delivery_date' ,
+                    'posts_per_page' => 30,
+                    'orderby'        => 'date',
+                    'order'          => 'DESC'
+                );
 
-    echo '<h2>' . $acf_string_nintety_days . '</h2>';
+    $delivery_date = get_posts( $args );
 
-    //Set date
-    $field_key = "date";
-    $value = $acf_string_nintety_days;
-    update_field( $field_key, $value, $post_id);
+    echo "Your postcode is " . $postcode;
+    
+    //MAke a select for customer to choose next date
+    echo "<select  type=\"text\" id=\"del-date\">" ; 
 
-
-    echo $ninety_days . "  " . $current_day; 
-
-    //Set default order days
-    $default_newcastle = 50; 
-    $default_nelson_bay = 0;
-    $default_swansea = 0;
-    $default_maitland = 0; 
-
-    switch ($current_day) {
-        case "Tue": 
-            $default_swansea = 50;
-            break;
-        case "Wed": 
-            $default_nelson_bay = 50;
-            break;
-        case "Thu":
-            $default_maitland = 50;
-            break;
-        case "Fri": 
-            $default_nelson_bay = 50;
-            break;
-        case "Sun": 
-            $default_newcastle = 00; 
-            $default_nelson_bay = 0;
-            $default_swansea = 0;
-            $default_maitland = 0; 
-            break;
-
+    //Each available date
+    foreach($delivery_date as $current_date) {
+        //Checks if not at capacity
+        if (intval(get_field("current", $current_date)) < intval(get_field("capacity", $current_date)))
+        {
+            $current_day = date('D', strtotime(get_field("date", $current_date)));
+            echo "<option value=\"" . get_field("date", $current_date) . "\">" . $current_day . " " . get_field("date", $current_date) . "</option>";
+        }
     }
 
-    echo "Limits for " . $ninety_days . "  " . $current_day . "<br>"; 
-    echo "Newcastle ". $default_newcastle . "<br>";
-    echo "Nelson Bay ". $default_nelson_bay . "<br>";
-    echo "Swansea ". $default_swansea . "<br>";
-    echo "Maitland ". $default_maitland . "<br>";
-
-    foreach()
+    echo "</select>";
 
  }
 
